@@ -1,0 +1,9 @@
+dependencies:
+- name: grafana
+  version: ^6.6.2
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: grafana.enabled
+- name: prometheus
+  version: ^3.2.0
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: prometheus.enabled

@@ -1,0 +1,9 @@
+# Configuration for Prometheus Grafana stack
+grafana:
+  enabled: true
+  service:
+    type: NodePort
+    port: 30002
+
+prometheus:
+  enabled: true
