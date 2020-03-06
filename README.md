@@ -46,13 +46,20 @@ open http://localhost:8081
 
 ```
 kubectl create namespace monitoring
-helm install --namespace monitoring --name monitoring -f helm-values/monitoring/values.yaml helm-values/monitoring
+helm dependency build helm-charts/monitoring/
+helm install monitoring --namespace monitoring -f helm-values/monitoring/values.yaml helm-charts/monitoring
 ```
 
 **Open Grafana:**
 ```
 open http://localhost:8082
 ```
+
+**Get admin password:**
+```
+kubectl get secret --namespace monitoring monitoring-grafana-secret -o jsonpath="{.data.GF_SECURITY_ADMIN_PASSWORD}" | base64 --decode ; echo
+```
+
 
 > For information:
 > - Grafana default values: https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
