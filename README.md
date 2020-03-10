@@ -75,3 +75,13 @@ open http://localhost:8083
 > For information:
 > - see Kibana values: https://github.com/helm/charts/blob/master/stable/kibana/values.yaml
 > - see ELK default values: https://github.com/helm/charts/blob/master/stable/elastic-stack/values.yaml
+
+## Test with custom services
+
+```
+kubectl create namespace test
+kubectl -n test run --image=smoreno/python-provider:latest provider --port=8080
+kubectl -n test run --image=smoreno/python-client:latest client --port=8080
+kubectl -n test expose deployment client --port=8080 --name=client
+kubectl -n test expose deployment provider --port=8080 --name=provider
+```
