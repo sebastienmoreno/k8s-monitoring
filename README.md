@@ -85,3 +85,5 @@ kubectl -n test run --image=smoreno/python-client:latest client --port=8080
 kubectl -n test expose deployment client --port=8080 --name=client
 kubectl -n test expose deployment provider --port=8080 --name=provider
 ```
+
+> Infos: https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
