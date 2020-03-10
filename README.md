@@ -13,7 +13,6 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm repo udpate
 ```
 
-
 # Demos
 
 ## Start local k3d Kubernetes
@@ -24,43 +23,55 @@ Start a local k3d stack, exposing 3 nodeports.
 k3d create --publish 8081:30001@k3d-k3s-default-worker-0 --publish 8082:30002@k3d-k3s-default-worker-0 --publish 8083:30003@k3d-k3s-default-worker-0 --publish 8080:80 --workers 2
 ```
 
+## Deploy Kubernetes dashboard
 
-## Deploy Elastic Stack (ELK)
+The Kubernetes dashboard will run on 8081 local port, and 30001 node port in internal.
 
-**Install ELK:**
 ```
-kubectl create namespace elk
-helm install --namespace elk --name elk -f helm-values/elk/values.yaml stable/elastic-stack
+kubectl create ns kubernetes-dashboard
+helm install kubernetes-dashboard --namespace kubernetes-dashboard helm-charts/dashboard
 ```
 
-**Open Kibana:**
+**Open dashboard:**
 ```
 open http://localhost:8081
 ```
 
-> For information:
-> - see Kibana values: https://raw.githubusercontent.com/helm/charts/master/stable/kibana/values.yaml
-> - see ELK default values: https://github.com/helm/charts/blob/master/stable/elastic-stack/values.yaml
-
 ## Deploy Prometheus Grafana
+
+The Grafana dashboard will run on 8082 local port, and 30002 node port in internal.
 
 ```
 kubectl create namespace monitoring
-helm dependency build helm-charts/monitoring/
-helm install monitoring --namespace monitoring -f helm-values/monitoring/values.yaml helm-charts/monitoring
+helm install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml stable/prometheus-operator
 ```
+
+> Doc:
+> https://github.com/helm/charts/tree/master/stable/prometheus-operator
+> For information:
+> - Grafana default values: https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
+> - Prometheus default value: https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml
 
 **Open Grafana:**
 ```
 open http://localhost:8082
 ```
 
-**Get admin password:**
+## Deploy Elastic Stack (ELK)
+
+The Kibana dashboard will run on 8083 local port, and 30003 node port in internal.
+
+**Install ELK:**
 ```
-kubectl get secret --namespace monitoring monitoring-grafana-secret -o jsonpath="{.data.GF_SECURITY_ADMIN_PASSWORD}" | base64 --decode ; echo
+kubectl create namespace logging
+helm install logging --namespace logging -f helm-values/logging-values.yaml stable/elastic-stack
 ```
 
+**Open Kibana:**
+```
+open http://localhost:8083
+```
 
 > For information:
-> - Grafana default values: https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
-> - Prometheus default value: https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml
+> - see Kibana values: https://github.com/helm/charts/blob/master/stable/kibana/values.yaml
+> - see ELK default values: https://github.com/helm/charts/blob/master/stable/elastic-stack/values.yaml
