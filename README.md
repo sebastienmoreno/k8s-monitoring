@@ -74,6 +74,7 @@ open http://localhost:8083
 
 > For information:
 > - see Kibana values: https://github.com/helm/charts/blob/master/stable/kibana/values.yaml
+> - see Logstash values: https://github.com/helm/charts/blob/master/stable/logstash/values.yaml
 > - see ELK default values: https://github.com/helm/charts/blob/master/stable/elastic-stack/values.yaml
 
 ## Test with custom services

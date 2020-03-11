@@ -14,8 +14,8 @@ kibana:
 
 logstash:
   enabled: true
-  # elasticsearch:
-  #   host: elastic-stack-elasticsearch-client
+  elasticsearch:
+    host: "{{ .Release.Name }}-elasticsearch-client"
 
 filebeat:
   enabled: false
@@ -24,7 +24,7 @@ filebeat:
   #   output.logstash:
   #     hosts: ["elastic-stack-logstash:5044"]
   # indexTemplateLoad:
-  #   - elastic-stack-elasticsearch-client:9200
+  #   - {{ .Release.Name }}-elasticsearch-client:9200
 
 fluentd:
   enabled: false
