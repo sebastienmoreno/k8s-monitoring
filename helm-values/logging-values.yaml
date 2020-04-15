@@ -8,7 +8,7 @@ kibana:
   enabled: true
   service:
     type: NodePort
-    nodePort: 30003
+    nodePort: 30002
   env:
     ELASTICSEARCH_HOSTS: http://{{ .Release.Name }}-elasticsearch-client:9200
 

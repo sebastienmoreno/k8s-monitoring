@@ -22,7 +22,7 @@ helm repo update
 Start a local k3d stack, exposing 3 nodeports.
 
 ```
-k3d create --publish 8081:30001@k3d-k3s-default-worker-0 --publish 8082:30002@k3d-k3s-default-worker-0 --publish 8083:30003@k3d-k3s-default-worker-0 --publish 8080:80 --workers 2
+k3d create --publish 8081:30001@k3d-k3s-default-worker-0 --publish 8081:30011@k3d-k3s-default-worker-0 --publish 8082:30002@k3d-k3s-default-worker-0 --publish 8080:80 --workers 2
 ```
 
 ### Deploy Remote K3S cluster
@@ -83,12 +83,16 @@ open "https://${AGENT1_IP}:30001"
 
 ## Deploy Prometheus Grafana
 
-The Grafana dashboard will run on 8082 local port, and 30002 node port in internal.
+The Grafana dashboard will run on 8081 local port, and 30011 node port in internal.
 
 ```
 kubectl create namespace monitoring
 helm install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml stable/prometheus-operator
 ```
+
+**Post install:**
+> into Grafana set database host as: http://monitoring-prometheus-oper-prometheus:9090/
+
 
 > Doc:
 > https://github.com/helm/charts/tree/master/stable/prometheus-operator
@@ -98,13 +102,13 @@ helm install monitoring --namespace monitoring -f helm-values/monitoring-values.
 
 **Open Grafana:**
 ```
-open http://localhost:8082
-open "https://${AGENT1_IP}:30002"
+open http://localhost:8081
+open "https://${AGENT1_IP}:30011"
 ```
 
 ## Deploy Elastic Stack (ELK)
 
-The Kibana dashboard will run on 8083 local port, and 30003 node port in internal.
+The Kibana dashboard will run on 8082 local port, and 30002 node port in internal.
 
 **Install ELK:**
 ```
@@ -114,8 +118,8 @@ helm install logging --namespace logging -f helm-values/logging-values.yaml stab
 
 **Open Kibana:**
 ```
-open http://localhost:8083
-open "https://${AGENT1_IP}:30003"
+open http://localhost:8082
+open "https://${AGENT1_IP}:30002"
 ```
 
 > For information:
@@ -134,3 +138,17 @@ kubectl -n test expose deployment provider --port=8080 --name=provider
 ```
 
 > Infos: https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
+
+
+# Reset Install
+
+## Monitoring
+
+```
+helm delete --purge "monitoring"
+
+kubectl delete -n monitoring CustomResourceDefinition alertmanagers.monitoring.coreos.com podmonitors.monitoring.coreos.com prometheuses.monitoring.coreos.com prometheusrules.monitoring.coreos.com servicemonitors.monitoring.coreos.com
+
+kubectl delete ns monitoring
+
+```
