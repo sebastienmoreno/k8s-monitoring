@@ -1,17 +1,11 @@
 KUBERNETES MONITORING
 =====================
 
-Kubernetes Demonstration stack for monitoring and logs.
+Kubernetes demonstration stack for monitoring and logs.
 
 # Requirements
 
 You should first check the [requirements](requirements.md) to install before launching the demo.
-
-Add the stable chart repo:
-```
-helm repo add stable https://kubernetes-charts.storage.googleapis.com
-helm repo update
-```
 
 # Demos
 
@@ -21,8 +15,16 @@ helm repo update
 
 Start a local k3d stack, exposing 3 nodeports.
 
+**Launch cluster:**
+
+```sh
+k3d cluster create --agents 2 --port 8081:30001@agent:0 --publish 8082:30002@agent:0 --publish 8083:30003@agent:0 --port 8080:80@loadbalancer
 ```
-k3d create --publish 8081:30001@k3d-k3s-default-worker-0 --publish 8082:30002@k3d-k3s-default-worker-0 --publish 8083:30003@k3d-k3s-default-worker-0 --publish 8080:80 --workers 2
+
+**Use Kubeconfig:**
+
+```sh
+export KUBECONFIG="$(k3d kubeconfig write 'k3s-default')"
 ```
 
 ### Deploy Remote K3S cluster
@@ -76,40 +78,67 @@ helm install kubernetes-dashboard --namespace kubernetes-dashboard helm-charts/d
 ```
 
 **Open dashboard:**
-```
-open http://localhost:8081
+
+```sh
+# With k3d
+open https://localhost:8081
+
+# With k3s
 open "https://${AGENT1_IP}:30001"
 ```
 
 ## Deploy Prometheus Grafana
 
+Add the Prometheus chart repo:
+
+```sh
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
 The Grafana dashboard will run on 8082 local port, and 30002 node port in internal.
 
-```
+```sh
 kubectl create namespace monitoring
-helm install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml stable/prometheus-operator
+helm upgrade --install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml prometheus-community/kube-prometheus-stack --version 36.2.1
 ```
 
 > Doc:
-> https://github.com/helm/charts/tree/master/stable/prometheus-operator
+> https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 > For information:
-> - Grafana default values: https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
-> - Prometheus default value: https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml
+> - Default values: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 
 **Open Grafana:**
-```
+```sh
 open http://localhost:8082
 open "https://${AGENT1_IP}:30002"
 ```
 
-## Deploy Elastic Stack (ELK)
+## Deploy Elastic Stack (ElasticSearch Kibana and FileBeat log integration)
+
+Add the Elastic chart repo:
+```sh
+helm repo add elastic https://helm.elastic.co
+helm repo update
+```
 
 The Kibana dashboard will run on 8083 local port, and 30003 node port in internal.
 
-**Install ELK:**
-```
+**Install Elastic Stack operators:**
+```sh
+# Install Elastic Stack operators
 kubectl create namespace logging
-helm install logging --namespace logging -f helm-values/logging-values.yaml stable/elastic-stack
+helm --namespace logging upgrade --install elastic-operator -f helm-values/logging-values.yaml elastic/eck-operator --version 2.3.0
+
+# Install ElasticSearch
+kubectl --namespace logging -f logging-manifests/secret.yaml
+kubectl --namespace logging -f logging-manifests/elasticsearch.yaml
+
+# Install FileBeat
+kubectl --namespace logging -f logging-manifests/beat.yaml
+
+# Install Kibana
+kubectl --namespace logging -f logging-manifests/kibana.yaml
 ```
 
 **Open Kibana:**
@@ -119,18 +148,14 @@ open "https://${AGENT1_IP}:30003"
 ```
 
 > For information:
-> - see Kibana values: https://github.com/helm/charts/blob/master/stable/kibana/values.yaml
-> - see Logstash values: https://github.com/helm/charts/blob/master/stable/logstash/values.yaml
-> - see ELK default values: https://github.com/helm/charts/blob/master/stable/elastic-stack/values.yaml
+> - see values: https://github.com/elastic/cloud-on-k8s/tree/2.3.0/deploy/eck-operator
+> - install Elastic Stack: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html
 
 ## Test with custom services
 
 ```
 kubectl create namespace test
-kubectl -n test run --image=smoreno/python-provider:latest provider --port=8080
-kubectl -n test run --image=smoreno/python-client:latest client --port=8080
-kubectl -n test expose deployment client --port=8080 --name=client
-kubectl -n test expose deployment provider --port=8080 --name=provider
+helm -n test upgrade --install client-provider ./helm-charts/client-provider
 ```
 
 > Infos: https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
