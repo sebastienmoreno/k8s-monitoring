@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: client
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: client
@@ -16,14 +16,14 @@ spec:
     spec:
       containers:
         - name: client
-          image: smoreno/python-client:latest
+          image: smoreno/simpleclient:latest
           imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8080
+          # ports:
+          #   - name: http
+          #     containerPort: 8080
+          #     protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 8080
 

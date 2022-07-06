@@ -18,7 +18,7 @@ Start a local k3d stack, exposing 3 nodeports.
 **Launch cluster:**
 
 ```sh
-k3d cluster create --agents 2 --port 8081:30001@agent:0 --publish 8082:30002@agent:0 --publish 8083:30003@agent:0 --port 8080:80@loadbalancer
+k3d cluster create --agents 2 --port 8081:30001@agent:0 --port 8082:30002@agent:0 --port 8083:30003@agent:0 --port 8080:80@loadbalancer
 ```
 
 **Use Kubeconfig:**
@@ -99,7 +99,10 @@ helm repo update
 The Grafana dashboard will run on 8082 local port, and 30002 node port in internal.
 
 ```sh
+# Create Namespace
 kubectl create namespace monitoring
+
+# Install Helm chart
 helm upgrade --install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml prometheus-community/kube-prometheus-stack --version 36.2.1
 ```
 
@@ -128,22 +131,22 @@ The Kibana dashboard will run on 8083 local port, and 30003 node port in interna
 ```sh
 # Install Elastic Stack operators
 kubectl create namespace logging
-helm --namespace logging upgrade --install elastic-operator -f helm-values/logging-values.yaml elastic/eck-operator --version 2.3.0
+helm --namespace logging upgrade --install elastic-operator elastic/eck-operator --version 2.3.0
 
 # Install ElasticSearch
-kubectl --namespace logging -f logging-manifests/secret.yaml
-kubectl --namespace logging -f logging-manifests/elasticsearch.yaml
+kubectl apply --namespace logging -f logging-manifests/secret.yaml
+kubectl apply --namespace logging -f logging-manifests/elasticsearch.yaml
 
 # Install FileBeat
-kubectl --namespace logging -f logging-manifests/beat.yaml
+kubectl apply --namespace logging -f logging-manifests/beat.yaml
 
 # Install Kibana
-kubectl --namespace logging -f logging-manifests/kibana.yaml
+kubectl apply --namespace logging -f logging-manifests/kibana.yaml
 ```
 
 **Open Kibana:**
 ```
-open http://localhost:8083
+open https://localhost:8083
 open "https://${AGENT1_IP}:30003"
 ```
 
@@ -155,7 +158,7 @@ open "https://${AGENT1_IP}:30003"
 
 ```
 kubectl create namespace test
-helm -n test upgrade --install client-provider ./helm-charts/client-provider
+helm -n test upgrade --install client-server ./helm-charts/client-server
 ```
 
 > Infos: https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
