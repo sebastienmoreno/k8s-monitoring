@@ -22,6 +22,8 @@ k3d cluster create --agents 2 --port 8081:30001@agent:0 --port 8082:30002@agent:
 ```
 
 **Use Kubeconfig:**
+By default your default ~/.kube/config file is updated with k3d credentials. 
+Otherwise, change your environment variable:
 
 ```sh
 export KUBECONFIG="$(k3d kubeconfig write 'k3s-default')"
@@ -72,12 +74,17 @@ ssh $SUDO_USERNAME@$SERVER_IP -i $KEY_LOCATION
 
 The Kubernetes dashboard will run on 8081 local port, and 30001 node port in internal.
 
-```
+```sh
+# Create namespace for Kubernetes dashboard
 kubectl create ns kubernetes-dashboard
-helm install kubernetes-dashboard --namespace kubernetes-dashboard helm-charts/dashboard
+
+# Install customized chart for nodeport and security configuration
+helm install kubernetes-dashboard --namespace kubernetes-dashboard helm-charts/kubernetes-dashboard
 ```
 
 **Open dashboard:**
+
+Use **Skip** to connect to the dashboard:
 
 ```sh
 # With k3d
@@ -100,10 +107,10 @@ The Grafana dashboard will run on 8082 local port, and 30002 node port in intern
 
 ```sh
 # Create Namespace
-kubectl create namespace monitoring
+kubectl create namespace kube-prometheus-stack
 
 # Install Helm chart
-helm upgrade --install monitoring --namespace monitoring -f helm-values/monitoring-values.yaml prometheus-community/kube-prometheus-stack --version 36.2.1
+helm upgrade --install kube-prometheus-stack --namespace kube-prometheus-stack -f helm-values/kube-prometheus-stack.yaml prometheus-community/kube-prometheus-stack --version 36.2.1
 ```
 
 > Doc:
@@ -112,6 +119,9 @@ helm upgrade --install monitoring --namespace monitoring -f helm-values/monitori
 > - Default values: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 
 **Open Grafana:**
+
+Use credentials admin / admin123 :
+
 ```sh
 open http://localhost:8082
 open "https://${AGENT1_IP}:30002"
@@ -129,22 +139,29 @@ The Kibana dashboard will run on 8083 local port, and 30003 node port in interna
 
 **Install Elastic Stack operators:**
 ```sh
-# Install Elastic Stack operators
-kubectl create namespace logging
-helm --namespace logging upgrade --install elastic-operator elastic/eck-operator --version 2.3.0
+# Namespace for complete Elastic Stack components
+kubectl create namespace elastic
+
+# Install Elastic Stack operators which will operate the installation
+helm --namespace elastic upgrade --install elastic-operator --wait elastic/eck-operator --version 2.3.0
+
+# Install custom user 'admin' with superuser rights
+kubectl apply --namespace elastic -f manifests/elastic/secret.yaml
 
 # Install ElasticSearch
-kubectl apply --namespace logging -f logging-manifests/secret.yaml
-kubectl apply --namespace logging -f logging-manifests/elasticsearch.yaml
+kubectl apply --namespace elastic -f manifests/elastic/elasticsearch.yaml
 
 # Install FileBeat
-kubectl apply --namespace logging -f logging-manifests/beat.yaml
+kubectl apply --namespace elastic -f manifests/elastic/beat.yaml
 
 # Install Kibana
-kubectl apply --namespace logging -f logging-manifests/kibana.yaml
+kubectl apply --namespace elastic -f manifests/elastic/kibana.yaml
 ```
 
 **Open Kibana:**
+
+Use credentials admin / admin123 :
+
 ```
 open https://localhost:8083
 open "https://${AGENT1_IP}:30003"
@@ -156,9 +173,12 @@ open "https://${AGENT1_IP}:30003"
 
 ## Test with custom services
 
-```
-kubectl create namespace test
-helm -n test upgrade --install client-server ./helm-charts/client-server
+```sh
+# client-server Namespace
+kubectl create namespace client-server
+
+# Deploy 1 server and 3 clients
+helm -n client-server upgrade --install client-server ./helm-charts/client-server
 ```
 
 > Infos: https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/

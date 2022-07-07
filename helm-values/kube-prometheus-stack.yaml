@@ -1,5 +1,5 @@
 grafana:
-  adminPassword: admin
+  adminPassword: admin123
   service:
     type: NodePort
     nodePort: 30002

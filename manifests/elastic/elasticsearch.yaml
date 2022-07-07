@@ -2,9 +2,12 @@ apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: quickstart
-  namespace: logging
+  namespace: elastic
 spec:
   version: 8.3.1
+  auth:
+    fileRealm:
+    - secretName: demo-es-user-secret
   nodeSets:
   - name: default
     count: 1
