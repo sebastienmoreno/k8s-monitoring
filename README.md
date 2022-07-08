@@ -18,7 +18,7 @@ Start a local k3d stack, exposing 3 nodeports.
 **Launch cluster:**
 
 ```sh
-k3d cluster create --agents 2 --port 8081:30001@agent:0 --port 8082:30002@agent:0 --port 8083:30003@agent:0 --port 8080:80@loadbalancer
+k3d cluster create --agents 2 --port 8081:30001@agent:0 --port 8082:30002@agent:0 --port 8083:30003@agent:0 --port 8084:30004@agent:0 --port 8080:80@loadbalancer
 ```
 
 **Use Kubeconfig:**
@@ -170,6 +170,29 @@ open "https://${AGENT1_IP}:30003"
 > For information:
 > - see values: https://github.com/elastic/cloud-on-k8s/tree/2.3.0/deploy/eck-operator
 > - install Elastic Stack: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html
+
+
+## Install Jaeger
+
+
+**Install cert-manager with CRDs:**
+```sh
+# Add JetStack repo
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+# Install prerequisite cert-manager
+helm install cert-manager jetstack/cert-manager  --namespace cert-manager  --create-namespace  --version v1.8.2  --set installCRDs=true
+```
+
+See: https://cert-manager.io/docs/installation/helm/#steps
+
+**Install Jaeger:**
+```sh
+kubectl create namespace jaeger
+helm -n jaeger upgrade --install jaeger -f helm-values/jaeger-values.yaml jaegertracing/jaeger
+```
+
 
 ## Test with custom services
 

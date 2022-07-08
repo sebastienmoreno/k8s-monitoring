@@ -1,0 +1,42 @@
+storage:
+  type: elasticsearch
+  elasticsearch:
+    host: quickstart-es-http.elastic
+    port: 9200
+    scheme: http
+    user: admin
+    password: admin123
+provisionDataStore:
+  cassandra: false
+  elasticsearch: false
+query:
+  service:
+    type: NodePort
+    nodePort: 30004
+#   cmdlineParams:
+#     es.tls.ca: "/tls/es.pem"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
+# collector:
+#   cmdlineParams:
+#     es.tls.ca: "/tls/es.pem"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
+# spark:
+#   enabled: true
+#   cmdlineParams:
+#     java.opts: "-Djavax.net.ssl.trustStore=/tls/trust.store -Djavax.net.ssl.trustStorePassword=changeit"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
